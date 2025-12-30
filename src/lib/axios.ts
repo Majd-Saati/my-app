@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://bikeindex.org/api/v3';
+// Get API base URL from environment variables
+// Vite uses import.meta.env for environment variables
+// Variables must be prefixed with VITE_ to be exposed to the client
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://bikeindex.org/api/v3';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
