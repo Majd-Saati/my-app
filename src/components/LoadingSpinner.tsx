@@ -1,8 +1,13 @@
+import { BikeCardSkeletonList } from './BikeCardSkeletonList';
+
 export function LoadingSpinner() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-8">
-      <div className="w-12 h-12 border-4 border-gray-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-      <p className="text-gray-600 text-lg m-0">Loading...</p>
+    <div className="w-full max-w-7xl mx-auto p-8">
+      <header className="text-center mb-8 pb-6 border-b-2 border-gray-200">
+        <div className="h-12 bg-gray-200 rounded w-96 mx-auto mb-2 animate-pulse"></div>
+        <div className="h-6 bg-gray-200 rounded w-64 mx-auto animate-pulse"></div>
+      </header>
+      <BikeCardSkeletonList count={6} />
     </div>
   );
 }
