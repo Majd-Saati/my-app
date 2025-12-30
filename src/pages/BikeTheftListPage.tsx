@@ -5,7 +5,7 @@ import { ErrorDisplay } from '../components/ErrorDisplay';
 import { EmptyState } from '../components/EmptyState';
 import { Pagination } from '../components/Pagination';
 import { useStolenBikes, useStolenBikesCount } from '../hooks/useBikes';
-import { calculatePaginationRange, calculateTotalPages } from '../utils/pagination';
+import { calculatePaginationRange } from '../utils/pagination';
 
 const ITEMS_PER_PAGE = 10;
 const SEARCH_DISTANCE = 10;
@@ -14,18 +14,26 @@ const SKELETON_COUNT = 6;
 function BikeTheftListPage() {
   const [currentPage, setCurrentPage] = useState(1);
   
+  // Trigger both requests on page initial load
   const { data: bikes = [], isLoading, error, refetch } = useStolenBikes({
     distance: SEARCH_DISTANCE,
     page: currentPage,
     perPage: ITEMS_PER_PAGE,
+    enabled: true, // Explicitly enable on initial load
   });
 
-  const { data: countData, isLoading: isCountLoading } = useStolenBikesCount({
-    distance: SEARCH_DISTANCE,
+  const {
+    data: countData,
+    isLoading: isCountLoading,
+    error: countError,
+    refetch: refetchCount,
+  } = useStolenBikesCount({
+    enabled: true, // Explicitly enable on initial load
   });
 
+  // Get count from useStolenBikesCount and calculate total pages (divide by 10)
   const totalCount = countData?.stolen || 0;
-  const totalPages = calculateTotalPages(totalCount, ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
   const { startItem, endItem } = calculatePaginationRange(currentPage, ITEMS_PER_PAGE, totalCount);
 
   const handlePageChange = (page: number) => {
@@ -33,10 +41,21 @@ function BikeTheftListPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleRetry = () => {
+    refetch();
+    refetchCount();
+  };
+
   const isLoadingData = isLoading || isCountLoading;
-  const errorMessage = error instanceof Error ? error.message : 'Failed to load bikes';
+  const hasError = error || countError;
+  const errorMessage =
+    error instanceof Error
+      ? error.message
+      : countError instanceof Error
+        ? countError.message
+        : 'Failed to load bike theft data';
   const hasBikes = bikes.length > 0;
-  const showPagination = totalPages > 1;
+  const hasNoResults = !isLoadingData && !hasError && totalCount === 0;
 
   return (
     <div className="w-full max-w-7xl mx-auto p-8">
@@ -48,9 +67,16 @@ function BikeTheftListPage() {
       <main className="w-full">
         {isLoadingData && <BikeCardSkeletonList count={SKELETON_COUNT} />}
 
-        {error && <ErrorDisplay message={errorMessage} onRetry={refetch} />}
+        {/* Error state: Show if list is unavailable (either query failed) */}
+        {hasError && !isLoadingData && (
+          <ErrorDisplay message={errorMessage} onRetry={handleRetry} />
+        )}
 
-        {!isLoadingData && !error && (
+        {/* Empty state: Show if there are no results (no error, but count is 0) */}
+        {hasNoResults && <EmptyState />}
+
+        {/* Success state: Show bikes list when data is available */}
+        {!isLoadingData && !hasError && !hasNoResults && (
           <>
             <ResultsSummary
               totalCount={totalCount}
@@ -60,9 +86,7 @@ function BikeTheftListPage() {
               totalPages={totalPages}
             />
 
-            {!hasBikes ? (
-              <EmptyState />
-            ) : (
+            {hasBikes ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
                   {bikes.map((bike) => (
@@ -70,7 +94,8 @@ function BikeTheftListPage() {
                   ))}
                 </div>
 
-                {showPagination && (
+                {/* Render pagination based on calculated total pages from count */}
+                {totalPages > 0 && (
                   <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
@@ -79,6 +104,8 @@ function BikeTheftListPage() {
                   />
                 )}
               </>
+            ) : (
+              <EmptyState />
             )}
           </>
         )}

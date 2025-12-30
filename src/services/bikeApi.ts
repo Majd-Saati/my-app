@@ -18,14 +18,12 @@ export interface FetchBikesParams {
 export async function fetchStolenBikesFromMunich(
   params: FetchBikesParams = {}
 ): Promise<BikeSearchResponse> {
-  const { distance = 10, page = 1, perPage = 10 } = params;
+  const { page = 1, perPage = 10 } = params;
 
-  // Munich coordinates: 48.1351, 11.5820
   const response = await apiClient.get<BikeSearchResponse>('/search', {
     params: {
-      location: '48.1351,11.5820', // Munich coordinates
-      stolenness: 'proximity',
-      distance: distance.toString(),
+      query: 'munich',
+      stolenness: 'stolen',
       page: page.toString(),
       per_page: perPage.toString(),
     },
@@ -36,17 +34,13 @@ export async function fetchStolenBikesFromMunich(
 
 /**
  * Fetches the count of stolen bikes from the Munich area
- * @param distance - Distance in miles from Munich (default: 10)
  * @returns Promise with bike count response
  */
-export async function fetchStolenBikesCount(
-  distance: number = 10
-): Promise<BikeCountResponse> {
+export async function fetchStolenBikesCount(): Promise<BikeCountResponse> {
   const response = await apiClient.get<BikeCountResponse>('/search/count', {
     params: {
       query: 'munich',
-      location: 'IP',
-      distance: distance.toString(),
+      // location: 'IP',
       stolenness: 'stolen',
     },
   });

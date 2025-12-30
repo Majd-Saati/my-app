@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import type { Bike } from '../types/bike';
 import { formatDate } from '../utils/dateFormatter';
 
@@ -47,16 +48,12 @@ export function BikeCard({ bike }: BikeCardProps) {
                   {isDescriptionExpanded ? (
                     <>
                       <span>Hide</span>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
+                      <FaChevronUp className="w-4 h-4" />
                     </>
                   ) : (
                     <>
                       <span>Show</span>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <FaChevronDown className="w-4 h-4" />
                     </>
                   )}
                 </button>
